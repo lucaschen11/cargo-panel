@@ -46,13 +46,12 @@ button {
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:disabled { opacity: .5; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-button.danger { color: var(--bad); }
 button.ghost { border-color: transparent; background: transparent; color: var(--muted); padding: 6px 8px; }
 input[type=text], input[type=password], textarea {
   width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 9px;
   padding: 10px 12px; outline: none;
 }
-input:focus { border-color: var(--accent); }
+input:focus, textarea:focus { border-color: var(--accent); }
 a { color: var(--accent); }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
@@ -99,9 +98,8 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .check { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 2px; font-size: 14px; color: var(--muted); }
 .check input { margin-top: 4px; accent-color: var(--accent); }
 .wb-list { display: grid; gap: 10px; margin-top: 14px; }
-.wb { border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 10px; background: var(--card); }
+.wb { border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 10px; background: var(--card); cursor: pointer; }
 .wb.done { opacity: .72; }
-.wb { cursor: pointer; }
 .wb.open { cursor: default; }
 .wb-top { display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 6px; outline-offset: 3px; }
 .chev { display: inline-block; width: 12px; color: var(--muted); font-size: 18px; line-height: 1; transition: transform .15s; }
@@ -113,12 +111,11 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .badge.idle { background: var(--idle-soft); color: var(--muted); }
 .badge.warn { background: var(--warn-soft); color: var(--warn); }
 .wb-top .spacer { flex: 1; }
-.wb-status { font-size: 13px; color: var(--muted); margin-top: 6px; }
 .wb-last { margin: 6px 0 0 20px; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .wb-last b, .timeline b { font-weight: 600; }
 .ev-date { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin-right: 8px; white-space: nowrap; }
 .wb.open .wb-status, .wb.open .wb-meta, .wb.open .small { margin-left: 20px; }
-.wb-status { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.wb-status { font-size: 13px; color: var(--muted); margin-top: 6px; display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .wb-status span { white-space: nowrap; }
 .timeline { list-style: none; margin: 10px 0 4px 20px; padding: 0 0 0 16px; border-left: 2px solid var(--line); font-size: 14px; }
 .timeline li { position: relative; padding: 0 0 10px; }
@@ -140,7 +137,6 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .hist-item .w { color: var(--warn); font-size: 12px; margin-left: 6px; }
 .hist-month { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 11px 14px; background: var(--bg); font-weight: 600; }
 .hist-month .muted { margin-left: auto; font-weight: 400; font-size: 13px; }
-.hist-month.open + .hist-item { border-top: none; }
 .hist-note { padding: 12px 14px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); }
 .hist-view { min-height: 300px; overflow-wrap: anywhere; }
 .back { display: none; margin-bottom: 10px; }
@@ -211,7 +207,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
       <div class="actions desktop-only" id="desk-actions"></div>
       <button class="ghost mobile-only" id="btn-refresh-m" title="刷新" aria-label="刷新">⟳ 刷新</button>
     </div>
-    <div class="head-row second mobile-only" id="mobile-actions-row"><div class="actions" id="mob-actions"></div></div>
+    <div class="head-row second mobile-only"><div class="actions" id="mob-actions"></div></div>
     <!-- 这组按钮按屏幕宽度挂到上面两个位置之一 -->
     <div hidden>
       <div id="action-group" class="actions">
@@ -296,12 +292,6 @@ function b64encode(text) {
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(bin);
 }
-function fmtTime(iso) {
-  if (!iso) return "";
-  const d = new Date(iso); if (isNaN(d)) return iso;
-  const p = n => String(n).padStart(2, "0");
-  return `${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-}
 
 // ── 单号解析 / 校验 ──
 // 逐个检查输入：每一段都必须是完整的单号（3 位前缀 + 8 位数字），否则列出问题，不会悄悄截断或忽略
@@ -317,7 +307,7 @@ function parseWaybills(text) {
   for (const tok of tokens) {
     if (!/^[\d-]+$/.test(tok)) { bad.push([tok, "含有数字和「-」以外的字符"]); continue; }
     const d = tok.replace(/-/g, "");
-    if (d.length !== 11) { bad.push([tok, `位数不对（${d.length} 位数字，应为 3 位前缀 + 8 位，共 11 位）`]); continue; }
+    if (d.length !== 11) { bad.push([tok, "位数不对（应为 3 位前缀 + 8 位，共 11 位）"]); continue; }
     const wb = `${d.slice(0, 3)}-${d.slice(3)}`;
     if (!ok.includes(wb)) ok.push(wb);
   }
@@ -439,19 +429,19 @@ const gh = {
 
 // ── 状态 ──
 const S = {
-  waybills: [], completed: new Set(), status: {}, wfState: null, runs: [], logs: [],
+  waybills: [], completed: new Set(), status: {}, wfState: null, logs: [],
   busy: 0, watchUntil: 0, watchStart: 0, sawActive: false, lastRefresh: 0, histIndex: -1,
   openWb: new Set(), histOpen: new Set(),
 };
 const ACTIVE = new Set(["queued", "in_progress", "waiting", "requested", "pending"]);
-const CONCL = { success: ["✓ 成功", "res-ok"], failure: ["✕ 失败", "res-bad"], cancelled: ["已取消", "muted"],
-                skipped: ["已跳过", "muted"], timed_out: ["超时", "res-bad"], startup_failure: ["✕ 启动失败", "res-bad"] };
+const CONCL = { success: "✓ 成功", failure: "✕ 失败", cancelled: "已取消", skipped: "已跳过",
+                timed_out: "超时", startup_failure: "✕ 启动失败" };
 
 const isDone = wb => S.completed.has(wb) || !!(S.status[wb] && S.status[wb].delivered);
 const pendingList = () => S.waybills.filter(wb => !isDone(wb));
 
 // ── 后台操作包装：防连点 + 统一报错 ──
-async function act(label, fn) {
+async function act(fn) {
   S.busy++; updateButtons();
   try { return await fn(); }
   catch (e) {
@@ -489,7 +479,7 @@ function badgeFor(wb) {
 function eventLine(ev) {
   const date = ev.date ? `<span class="ev-date">${esc(ev.date)}</span>` : "";
   const act = ev.action ? `<b>${esc(ev.action.toUpperCase())}</b> · ` : "";
-  return `${date}${act}${esc(ev.full_text || ev.text || "")}`;
+  return `${date}${act}${esc(ev.full_text || "")}`;
 }
 function renderWaybills() {
   const list = $("#wb-list");
@@ -570,7 +560,7 @@ async function openHist(i) {
 
 // ── 数据加载 ──
 async function refreshAll(quiet = false) {
-  await act("refresh", async () => {
+  await act(async () => {
     const [wb, completed, status, wf] = await Promise.all([
       gh.getFile("waybills.json"), gh.getJson("completed.json", []), gh.getJson("status.json", {}), gh.workflow(),
     ]);
@@ -601,7 +591,7 @@ async function addWaybills(raw) {
   const { ok: found, bad } = parseWaybills(raw);
   if (!found.length && !bad.length) { inputError("未识别到单号。"); return; }
   if (bad.length) {   // 有任何一段不对就整批不加，保留输入让用户改
-    inputError("以下内容不是有效单号，请修改后再添加：\n" + bad.map(([t, r]) => `${t}：${r}`).join("\n"));
+    inputError("以下内容不是有效单号：\n" + bad.map(([t, r]) => `${t}：${r}`).join("\n"));
     return;
   }
   inputError("");
@@ -611,10 +601,10 @@ async function addWaybills(raw) {
   if (dup.length) toast(`已跳过列表里已有的：${dup.join(", ")}`);
   const probs = fresh.map(w => [w, awbProblem(w)]).filter(x => x[1]);
   if (probs.length && !confirm(probs.map(([w, p]) => `${w}：${p}`).join("\n") + "\n\n仍然添加吗？")) return;
-  try { await act("add", async () => {
+  try { await act(async () => {
     S.waybills = await gh.updateList("waybills.json", cur => cur.concat(fresh.filter(w => !cur.includes(w))),
                                      `添加单号 ${fresh.join(", ")}（网页）`);
-    // 以前送达过又重新加回来的：从 completed.json 去掉，否则定时任务会跳过它
+    // 以前送达过又重新加回来的：从 completed.json 去掉，否则定时运行会跳过它
     const again = fresh.filter(w => S.completed.has(w));
     if (again.length) {
       await gh.updateList("completed.json", cur => cur.filter(w => !again.includes(w)), `重新追踪 ${again.join(", ")}（网页）`);
@@ -627,14 +617,14 @@ async function addWaybills(raw) {
   await afterChange(true);
 }
 async function removeWaybills(items, message) {
-  try { await act("remove", async () => {
+  try { await act(async () => {
     S.waybills = await gh.updateList("waybills.json", cur => cur.filter(w => !items.includes(w)), message);
     renderWaybills();
     toast(`已删除 ${items.length} 个单号`);
   }); } catch { return; }
   await afterChange(false);
 }
-// 单号变化后：按需开关定时任务、按需立即查一次
+// 单号变化后：按需开关定时推送、按需立即推送一次
 async function afterChange(added) {
   const pending = pendingList().length > 0;
   const wantRun = added && $("#chk-run-after").checked && pending;
@@ -647,7 +637,7 @@ async function afterChange(added) {
 
 // ── Actions ──
 async function setWorkflow(on, msg) {
-  await act("wf", async () => {
+  await act(async () => {
     await gh.setWorkflow(on);
     setWfState(on ? "active" : "disabled_manually");
     toast(msg || (on ? "定时推送已开启" : "定时推送已关闭"));
@@ -655,7 +645,7 @@ async function setWorkflow(on, msg) {
 }
 async function triggerRun(scope = "all") {
   if (!S.waybills.length) return;
-  await act("run", async () => {
+  await act(async () => {
     if (S.wfState !== "active") { await gh.setWorkflow(true); setWfState("active"); }  // 关闭状态不能手动触发
     await gh.dispatch(scope);
     S.watchStart = Date.now(); S.watchUntil = Date.now() + 15 * 60e3; S.sawActive = false;
@@ -669,13 +659,13 @@ async function watchTick() {
   clearTimeout(watchTimer);
   if (!S.watchUntil || Date.now() > S.watchUntil) { S.watchUntil = 0; setWfState(S.wfState); return; }
   try {
-    S.runs = await gh.runs();
-    const active = S.runs.some(r => ACTIVE.has(r.status));
+    const runs = await gh.runs(5);
+    const active = runs.some(r => ACTIVE.has(r.status));
     if (active) { S.sawActive = true; showRunning(); }
     else if (S.sawActive || Date.now() - S.watchStart > 90e3) {
       S.watchUntil = 0; setWfState(S.wfState);
-      const last = S.runs[0] || {};
-      toast("查询完成：" + ((CONCL[last.conclusion] || [last.conclusion || ""])[0]), last.conclusion !== "success", 6000);
+      const last = runs[0] || {};
+      toast("查询完成：" + (CONCL[last.conclusion] || last.conclusion || ""), last.conclusion !== "success", 6000);
       setTimeout(() => refreshAll(true), 5000);    // Actions 提交状态文件需要几秒
       return;
     }
