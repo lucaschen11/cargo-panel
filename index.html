@@ -307,7 +307,7 @@ function parseWaybills(text) {
   for (const tok of tokens) {
     if (!/^[\d-]+$/.test(tok)) { bad.push([tok, "含有数字和「-」以外的字符"]); continue; }
     const d = tok.replace(/-/g, "");
-    if (d.length !== 11) { bad.push([tok, "位数不对（应为 3 位前缀 + 8 位，共 11 位）"]); continue; }
+    if (d.length !== 11) { bad.push([tok, "位数不对（应为250+8位数字，共11位数字）"]); continue; }
     const wb = `${d.slice(0, 3)}-${d.slice(3)}`;
     if (!ok.includes(wb)) ok.push(wb);
   }
