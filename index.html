@@ -94,6 +94,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 
 /* 单号 */
 .add-row { display: flex; gap: 8px; align-items: stretch; }
+.field-err { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--bad-soft); color: var(--bad); font-size: 14px; white-space: pre-line; }
 #in-wb { resize: none; min-height: 44px; line-height: 1.45; overflow: hidden; }
 .check { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 2px; font-size: 14px; color: var(--muted); }
 .check input { margin-top: 4px; accent-color: var(--accent); }
@@ -235,6 +236,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
                     placeholder="单号，如 250-14065100（可粘贴多个，空格或逗号隔开）"></textarea>
           <button class="primary" id="btn-add" type="submit">添加</button>
         </form>
+        <div class="field-err" id="wb-err" role="alert" hidden></div>
         <label class="check"><input type="checkbox" id="chk-run-after" checked> 添加后立即推送一次</label>
         <div class="wb-list" id="wb-list"><div class="empty">加载中…</div></div>
         <div class="list-foot">
@@ -302,10 +304,24 @@ function fmtTime(iso) {
 }
 
 // ── 单号解析 / 校验 ──
+// 逐个检查输入：每一段都必须是完整的单号（3 位前缀 + 8 位数字），否则列出问题，不会悄悄截断或忽略
 function parseWaybills(text) {
-  const out = []; const re = /(\d{3})\D?(\d{8})/g; let m;
-  while ((m = re.exec(text || ""))) { const wb = `${m[1]}-${m[2]}`; if (!out.includes(wb)) out.push(wb); }
-  return out;
+  const t = (text || "").normalize("NFKC").replace(/[‐‑‒–—―−]/g, "-");   // 全角数字/逗号、各种横线统一
+  const parts = t.split(/[\s,、;]+/).filter(Boolean);
+  const tokens = [];
+  for (let i = 0; i < parts.length; i++) {          // "250 14065100" 这种被空格隔开的也认
+    if (/^\d{3}$/.test(parts[i]) && /^\d{8}$/.test(parts[i + 1] || "")) { tokens.push(parts[i] + "-" + parts[i + 1]); i++; }
+    else tokens.push(parts[i]);
+  }
+  const ok = [], bad = [];
+  for (const tok of tokens) {
+    if (!/^[\d-]+$/.test(tok)) { bad.push([tok, "含有数字和「-」以外的字符"]); continue; }
+    const d = tok.replace(/-/g, "");
+    if (d.length !== 11) { bad.push([tok, `位数不对（${d.length} 位数字，应为 3 位前缀 + 8 位，共 11 位）`]); continue; }
+    const wb = `${d.slice(0, 3)}-${d.slice(3)}`;
+    if (!ok.includes(wb)) ok.push(wb);
+  }
+  return { ok, bad };
 }
 function awbProblem(wb) {
   const [prefix, serial] = wb.split("-");
@@ -480,7 +496,8 @@ function renderWaybills() {
   if (!S.waybills.length) {
     list.innerHTML = `<div class="empty">还没有单号。在上面输入单号后点「添加」。</div>`;
   } else {
-    list.innerHTML = S.waybills.map(wb => {
+    const ordered = [...S.waybills.filter(w => !isDone(w)), ...S.waybills.filter(isDone)];
+    list.innerHTML = ordered.map(wb => {
       const st = S.status[wb] || null, done = isDone(wb), open = S.openWb.has(wb);
       // 完整历史来自 status.json 的 history（新版 tracker.py 写入）；旧数据只有最新一条
       const hist = st && Array.isArray(st.history) && st.history.length ? st.history
@@ -579,11 +596,19 @@ async function loadHistory() {
 }
 
 // ── 单号操作 ──
+function inputError(msg) { const el = $("#wb-err"); el.textContent = msg; el.hidden = !msg; }
 async function addWaybills(raw) {
-  const found = parseWaybills(raw);
-  if (!found.length) { toast("没识别到单号。格式：3 位前缀 + 8 位数字，例如 250-14065100", true); return; }
+  const { ok: found, bad } = parseWaybills(raw);
+  if (!found.length && !bad.length) { inputError("未识别到单号。"); return; }
+  if (bad.length) {   // 有任何一段不对就整批不加，保留输入让用户改
+    inputError("以下内容不是有效单号，请修改后再添加：\n" + bad.map(([t, r]) => `${t}：${r}`).join("\n"));
+    return;
+  }
+  inputError("");
   const fresh = found.filter(w => !S.waybills.includes(w));
-  if (!fresh.length) { toast("这些单号已经在列表里了"); $("#in-wb").value = ""; return; }
+  const dup = found.filter(w => S.waybills.includes(w));
+  if (!fresh.length) { inputError(dup.length > 1 ? "这些单号已经在列表里了。" : "这个单号已经在列表里了。"); return; }
+  if (dup.length) toast(`已跳过列表里已有的：${dup.join(", ")}`);
   const probs = fresh.map(w => [w, awbProblem(w)]).filter(x => x[1]);
   if (probs.length && !confirm(probs.map(([w, p]) => `${w}：${p}`).join("\n") + "\n\n仍然添加吗？")) return;
   try { await act("add", async () => {
@@ -692,6 +717,7 @@ $("#login-form").addEventListener("submit", async e => {
   catch (err) { $("#login-err").textContent = err.message; $("#btn-login").disabled = false; }
 });
 $("#add-form").addEventListener("submit", e => { e.preventDefault(); addWaybills($("#in-wb").value); });
+$("#in-wb").addEventListener("input", () => inputError(""));
 $("#in-wb").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); addWaybills($("#in-wb").value); }
 });
