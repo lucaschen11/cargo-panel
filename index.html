@@ -38,7 +38,7 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 [hidden] { display: none !important; }
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 button {
   border: 1px solid var(--line); background: var(--card); border-radius: 9px;
   padding: 8px 14px; cursor: pointer; white-space: nowrap;
@@ -48,7 +48,7 @@ button:disabled { opacity: .5; cursor: default; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
 button.danger { color: var(--bad); }
 button.ghost { border-color: transparent; background: transparent; color: var(--muted); padding: 6px 8px; }
-input[type=text], input[type=password] {
+input[type=text], input[type=password], textarea {
   width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 9px;
   padding: 10px 12px; outline: none;
 }
@@ -76,7 +76,6 @@ header {
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
 .brand img { width: 34px; height: 34px; border-radius: 8px; }
 .brand b { font-size: 17px; display: block; }
-.brand .repo { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
 .actions { display: flex; align-items: center; gap: 8px; }
 .pill { border-radius: 999px; padding: 4px 11px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .pill.on { background: var(--ok-soft); color: var(--ok); }
@@ -94,13 +93,18 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
 
 /* 单号 */
-.add-row { display: flex; gap: 8px; }
+.add-row { display: flex; gap: 8px; align-items: stretch; }
+#in-wb { resize: none; min-height: 44px; line-height: 1.45; overflow: hidden; }
 .check { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 2px; font-size: 14px; color: var(--muted); }
 .check input { margin-top: 4px; accent-color: var(--accent); }
 .wb-list { display: grid; gap: 10px; margin-top: 14px; }
 .wb { border: 1px solid var(--line); border-radius: 10px; padding: 12px 12px 10px; background: var(--card); }
 .wb.done { opacity: .72; }
-.wb-top { display: flex; align-items: center; gap: 8px; }
+.wb { cursor: pointer; }
+.wb.open { cursor: default; }
+.wb-top { display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 6px; outline-offset: 3px; }
+.chev { display: inline-block; width: 12px; color: var(--muted); font-size: 18px; line-height: 1; transition: transform .15s; }
+.wb.open .chev, .hist-month.open .chev { transform: rotate(90deg); }
 .wb-no { font-family: var(--mono); font-weight: 700; font-size: 16px; letter-spacing: .3px; }
 .badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .badge.ok { background: var(--ok-soft); color: var(--ok); }
@@ -109,9 +113,17 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .badge.warn { background: var(--warn-soft); color: var(--warn); }
 .wb-top .spacer { flex: 1; }
 .wb-status { font-size: 13px; color: var(--muted); margin-top: 6px; }
-.wb-last { margin-top: 4px; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
-.wb-last.open { -webkit-line-clamp: unset; }
-.wb-last b { font-weight: 600; }
+.wb-last { margin: 6px 0 0 20px; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.wb-last b, .timeline b { font-weight: 600; }
+.ev-date { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin-right: 8px; white-space: nowrap; }
+.wb.open .wb-status, .wb.open .wb-meta, .wb.open .small { margin-left: 20px; }
+.wb-status { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+.wb-status span { white-space: nowrap; }
+.timeline { list-style: none; margin: 10px 0 4px 20px; padding: 0 0 0 16px; border-left: 2px solid var(--line); font-size: 14px; }
+.timeline li { position: relative; padding: 0 0 10px; }
+.timeline li::before { content: ""; position: absolute; left: -22px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--card); border: 2px solid var(--line); }
+.timeline li:first-child::before { background: var(--accent); border-color: var(--accent); }
+.timeline li:last-child { padding-bottom: 2px; }
 .wb-meta { margin-top: 6px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .list-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .list-foot .muted { margin-left: auto; font-size: 13px; }
@@ -125,6 +137,10 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .hist-item.active { background: var(--accent-soft); }
 .hist-item .t { font-size: 12px; color: var(--muted); }
 .hist-item .w { color: var(--warn); font-size: 12px; margin-left: 6px; }
+.hist-month { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 11px 14px; background: var(--bg); font-weight: 600; }
+.hist-month .muted { margin-left: auto; font-weight: 400; font-size: 13px; }
+.hist-month.open + .hist-item { border-top: none; }
+.hist-note { padding: 12px 14px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); }
 .hist-view { min-height: 300px; overflow-wrap: anywhere; }
 .back { display: none; margin-bottom: 10px; }
 .md h2 { font-size: 19px; margin: 0 0 8px; }
@@ -135,17 +151,6 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 .md p { margin: 6px 0; }
 .md hr { border: none; border-top: 1px solid var(--line); margin: 14px 0; }
 .md code { font-family: var(--mono); font-size: 12.5px; background: var(--idle-soft); padding: 1px 5px; border-radius: 4px; }
-
-/* 运行记录 */
-.run { display: grid; grid-template-columns: 110px 64px 1fr auto; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
-.run:last-child { border-bottom: none; }
-.ev { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--idle-soft); color: var(--muted); text-align: center; }
-.res-ok { color: var(--ok); } .res-bad { color: var(--bad); } .res-run { color: var(--warn); }
-
-/* 设置 */
-.set-group { margin-bottom: 14px; }
-.set-group h3 { font-size: 15px; margin: 0 0 8px; }
-.row { display: flex; gap: 8px; }
 
 #toast {
   position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateX(-50%);
@@ -164,13 +169,12 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
   .desktop-only { display: none !important; }
   main { padding-left: 12px; padding-right: 12px; }
   .panel { padding: 12px; }
+  #in-wb { min-height: 66px; }          /* 手机上提示文字较长，留两行 */
   .hist { grid-template-columns: 1fr; }
   .hist-list { max-height: none; }
   .hist.detail .hist-list { display: none; }
   .hist:not(.detail) .hist-view { display: none; }
   .back { display: inline-block; }
-  .run { grid-template-columns: 1fr auto; row-gap: 2px; }
-  .run .dur { grid-column: 2; text-align: right; }
 }
 @media (min-width: 721px) { .mobile-only { display: none !important; } }
 </style>
@@ -201,7 +205,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
     <div class="head-row">
       <div class="brand">
         <img src="icon.png" alt="">
-        <div style="min-width:0"><b>货运追踪</b><span class="repo" id="repo-label"></span></div>
+        <b>货运追踪</b>
       </div>
       <div class="actions desktop-only" id="desk-actions"></div>
       <button class="ghost mobile-only" id="btn-refresh-m" title="刷新" aria-label="刷新">⟳ 刷新</button>
@@ -210,7 +214,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
     <!-- 这组按钮按屏幕宽度挂到上面两个位置之一 -->
     <div hidden>
       <div id="action-group" class="actions">
-        <span class="pill off" id="pill">定时任务：…</span>
+        <span class="pill off" id="pill">定时推送：…</span>
         <button id="btn-toggle" disabled>…</button>
         <button id="btn-refresh" class="desktop-only">刷新</button>
         <button id="btn-run" class="primary">立即查询并推送</button>
@@ -219,8 +223,6 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
     <nav class="tabs" id="tabs">
       <button data-tab="wb" class="active">单号</button>
       <button data-tab="hist">推送记录</button>
-      <button data-tab="runs">运行记录</button>
-      <button data-tab="set">设置</button>
     </nav>
   </header>
 
@@ -229,11 +231,11 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
     <section data-pane="wb">
       <div class="panel">
         <form class="add-row" id="add-form">
-          <input id="in-wb" type="text" inputmode="text" spellcheck="false" autocomplete="off"
-                 placeholder="单号，如 250-14065100（可粘贴多个）">
+          <textarea id="in-wb" rows="1" spellcheck="false" autocomplete="off" enterkeyhint="done"
+                    placeholder="单号，如 250-14065100（可粘贴多个，空格或逗号隔开）"></textarea>
           <button class="primary" id="btn-add" type="submit">添加</button>
         </form>
-        <label class="check"><input type="checkbox" id="chk-run-after"> 添加后立即查一次（只查未送达的，结果推送到微信）</label>
+        <label class="check"><input type="checkbox" id="chk-run-after" checked> 添加后立即推送一次</label>
         <div class="wb-list" id="wb-list"><div class="empty">加载中…</div></div>
         <div class="list-foot">
           <button id="btn-clean">清理已送达</button>
@@ -253,33 +255,6 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
       </div>
     </section>
 
-    <!-- 运行记录 -->
-    <section data-pane="runs" hidden>
-      <div class="panel">
-        <div class="muted small" style="margin-bottom:6px">每次定时或手动查询都会在 GitHub Actions 上跑一次，一般 1–3 分钟。</div>
-        <div id="runs-list"><div class="empty">加载中…</div></div>
-      </div>
-    </section>
-
-    <!-- 设置 -->
-    <section data-pane="set" hidden>
-      <div class="panel">
-        <div class="set-group">
-          <h3>定时任务</h3>
-          <div class="small" id="sched-text">运行时间：读取中…</div>
-          <label class="check"><input type="checkbox" id="chk-auto"> 根据单号自动开关定时任务（有未送达单号就开，全部送达或清空就关）</label>
-        </div>
-        <div class="set-group">
-          <h3>连接</h3>
-          <div class="row"><input id="set-repo" type="text" spellcheck="false"><button id="btn-save-repo">保存</button></div>
-          <div class="muted small" style="margin-top:6px">一般不用改。访问码过期时会自动回到登录页，向维护者要一个新的即可。</div>
-        </div>
-        <div class="set-group" style="margin-bottom:0">
-          <h3>这台设备</h3>
-          <button class="danger" id="btn-logout">退出登录（清除本机保存的访问码）</button>
-        </div>
-      </div>
-    </section>
   </main>
 </div>
 
@@ -290,6 +265,7 @@ main { max-width: 1080px; margin: 0 auto; padding: 16px 16px calc(32px + env(saf
 /* ═════════════ 配置：维护者改这里 ═════════════ */
 const DEFAULT_REPO = "lucaschen11/cargo-tracker";   // 数据仓库
 const WORKFLOW     = "track.yml";
+const AUTO_TOGGLE  = true;   // 根据单号自动开关定时推送
 /* ════════════════════════════════════════════ */
 
 const API = "https://api.github.com";
@@ -346,12 +322,6 @@ function parseLogIndex(text) {
     items.push({ time: m[1], path: "logs/" + m[2], title, result });
   }
   return items;
-}
-function parseSchedule(yml) {
-  const t = []; const re = /cron:\s*['"](\d+)\s+(\d+)\s+\*\s+\*\s+\*['"]/g; let m;
-  while ((m = re.exec(yml || ""))) t.push([(Number(m[2]) + 8) % 24, Number(m[1])]);
-  t.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  return t.map(([h, mm]) => `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`);
 }
 
 // ── Markdown（只支持推送日志用到的子集，先转义再加标签，杜绝注入）──
@@ -454,13 +424,12 @@ const gh = {
 // ── 状态 ──
 const S = {
   waybills: [], completed: new Set(), status: {}, wfState: null, runs: [], logs: [],
-  busy: 0, watchUntil: 0, watchStart: 0, sawActive: false, lastRefresh: 0, histLoaded: false, histIndex: -1,
+  busy: 0, watchUntil: 0, watchStart: 0, sawActive: false, lastRefresh: 0, histIndex: -1,
+  openWb: new Set(), histOpen: new Set(),
 };
 const ACTIVE = new Set(["queued", "in_progress", "waiting", "requested", "pending"]);
-const RUN_CN = { queued: "排队中", in_progress: "运行中", waiting: "等待中", requested: "已请求", pending: "等待中" };
 const CONCL = { success: ["✓ 成功", "res-ok"], failure: ["✕ 失败", "res-bad"], cancelled: ["已取消", "muted"],
                 skipped: ["已跳过", "muted"], timed_out: ["超时", "res-bad"], startup_failure: ["✕ 启动失败", "res-bad"] };
-const EVENT_CN = { schedule: "定时", workflow_dispatch: "手动", push: "提交" };
 
 const isDone = wb => S.completed.has(wb) || !!(S.status[wb] && S.status[wb].delivered);
 const pendingList = () => S.waybills.filter(wb => !isDone(wb));
@@ -487,33 +456,53 @@ function setWfState(state) {
   const on = state === "active", pill = $("#pill");
   if (!(S.watchUntil && Date.now() < S.watchUntil)) {
     pill.className = "pill " + (on ? "on" : "off");
-    pill.textContent = on ? "定时任务：已开启" : "定时任务：已关闭";
+    pill.textContent = on ? "定时推送：已开启" : "定时推送：已关闭";
   }
-  $("#btn-toggle").textContent = on ? "关闭定时" : "开启定时";
+  $("#btn-toggle").textContent = on ? "关闭推送" : "开启推送";
   updateButtons();
 }
 function showRunning() { const p = $("#pill"); p.className = "pill run"; p.textContent = "正在查询…"; }
 
+function badgeFor(wb) {
+  const st = S.status[wb] || null;
+  if (isDone(wb)) return `<span class="badge ok">✓ 已送达</span>`;
+  if (!st) return `<span class="badge idle">等待首次查询</span>`;
+  if (/unknown|no trac/i.test((st.status || "") + (st.last_text || ""))) return `<span class="badge warn">暂无信息</span>`;
+  return `<span class="badge go">运输中</span>`;
+}
+function eventLine(ev) {
+  const date = ev.date ? `<span class="ev-date">${esc(ev.date)}</span>` : "";
+  const act = ev.action ? `<b>${esc(ev.action.toUpperCase())}</b> · ` : "";
+  return `${date}${act}${esc(ev.full_text || ev.text || "")}`;
+}
 function renderWaybills() {
   const list = $("#wb-list");
   if (!S.waybills.length) {
     list.innerHTML = `<div class="empty">还没有单号。在上面输入单号后点「添加」。</div>`;
   } else {
     list.innerHTML = S.waybills.map(wb => {
-      const st = S.status[wb] || null, done = isDone(wb);
-      let badge;
-      if (done) badge = `<span class="badge ok">✓ 已送达</span>`;
-      else if (!st) badge = `<span class="badge idle">等待首次查询</span>`;
-      else if (/unknown|no trac/i.test((st.status || "") + (st.last_text || ""))) badge = `<span class="badge warn">暂无信息</span>`;
-      else badge = `<span class="badge go">运输中</span>`;
-      const last = st && st.last_text ? (st.last_action ? `<b>${esc(st.last_action.toUpperCase())}</b> · ` : "") + esc(st.last_text) : "";
-      const meta = st ? [st.last_date, st.dest && ("目的地 " + st.dest), st.flight && ("航班 " + st.flight), st.checked_at && ("查询于 " + st.checked_at.slice(5))].filter(Boolean) : [];
-      return `<div class="wb${done ? " done" : ""}">
-        <div class="wb-top"><span class="wb-no">${esc(wb)}</span>${badge}<span class="spacer"></span>
+      const st = S.status[wb] || null, done = isDone(wb), open = S.openWb.has(wb);
+      // 完整历史来自 status.json 的 history（新版 tracker.py 写入）；旧数据只有最新一条
+      const hist = st && Array.isArray(st.history) && st.history.length ? st.history
+                 : st && st.last_text ? [{ action: st.last_action, date: st.last_date, full_text: st.last_text }] : [];
+      let body;
+      if (!hist.length) {
+        body = `<div class="wb-last muted">${st ? "暂无物流记录" : "添加后会在下一次查询时获取状态"}</div>`;
+      } else if (!open) {
+        body = `<div class="wb-last">${eventLine(hist[0])}</div>`;
+      } else {
+        const info = [st.status && "状态：" + st.status, st.dest && "目的地 " + st.dest, st.flight && "航班 " + st.flight].filter(Boolean);
+        body = `${info.length ? `<div class="wb-status">${info.map(x => `<span>${esc(x)}</span>`).join("")}</div>` : ""}
+          <ol class="timeline">${hist.map(ev => `<li>${eventLine(ev)}</li>`).join("")}</ol>
+          ${!Array.isArray(st.history) ? `<div class="muted small">完整记录会在下一次查询后显示</div>` : ""}
+          ${st.checked_at ? `<div class="wb-meta">查询于 ${esc(st.checked_at)}</div>` : ""}`;
+      }
+      return `<div class="wb${done ? " done" : ""}${open ? " open" : ""}" data-wb="${esc(wb)}">
+        <div class="wb-top" role="button" tabindex="0" aria-expanded="${open}">
+          <span class="chev" aria-hidden="true">›</span><span class="wb-no">${esc(wb)}</span>${badgeFor(wb)}
+          <span class="spacer"></span>
           <button class="ghost del" data-wb="${esc(wb)}" aria-label="删除 ${esc(wb)}">删除</button></div>
-        ${st && st.status ? `<div class="wb-status">状态：${esc(st.status)}</div>` : ""}
-        ${last ? `<div class="wb-last" title="点击展开">${last}</div>` : ""}
-        ${meta.length ? `<div class="wb-meta">${meta.map(m => `<span>${esc(m)}</span>`).join("")}</div>` : ""}
+        ${body}
       </div>`;
     }).join("");
   }
@@ -522,40 +511,42 @@ function renderWaybills() {
   updateButtons();
 }
 
-function renderRuns() {
-  const el = $("#runs-list");
-  if (!S.runs.length) { el.innerHTML = `<div class="empty">还没有运行记录</div>`; return; }
-  el.innerHTML = S.runs.map(r => {
-    let res, cls;
-    if (ACTIVE.has(r.status)) { res = RUN_CN[r.status]; cls = "res-run"; }
-    else { [res, cls] = CONCL[r.conclusion] || [r.conclusion || "", "muted"]; }
-    let dur = "";
-    if (r.status === "completed" && r.run_started_at && r.updated_at) {
-      const s = Math.round((new Date(r.updated_at) - new Date(r.run_started_at)) / 1000);
-      dur = s >= 60 ? `${Math.floor(s / 60)} 分 ${s % 60} 秒` : `${s} 秒`;
-    }
-    return `<div class="run"><span>${esc(fmtTime(r.run_started_at || r.created_at))}</span>
-      <span class="ev">${esc(EVENT_CN[r.event] || r.event)}</span>
-      <span class="${cls}">${esc(res)}</span><span class="dur muted small">${esc(dur)}</span></div>`;
-  }).join("");
+// 推送记录：本月平铺，往月按「年月」收起，点开才显示
+function beijingMonth() {
+  const d = new Date(Date.now() + 8 * 3600e3);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
-
+function histItemHtml(it, i) {
+  const warn = /失败|出错|部分/.test(it.result || "") ? `<span class="w">⚠ ${esc(it.result.slice(0, 20))}</span>` : "";
+  return `<button class="hist-item${i === S.histIndex ? " active" : ""}" data-i="${i}">
+    <div class="t">${esc(it.time)}${warn}</div><div>${esc(it.title)}</div></button>`;
+}
 function renderHistList() {
   const el = $("#hist-list");
-  const items = [{ time: "", path: "latest.md", title: "★ 最新一次推送", result: "推送成功" }, ...S.logs];
-  el.innerHTML = items.map((it, i) => {
-    const warn = /失败|出错|部分/.test(it.result || "") ? `<span class="w">⚠ ${esc(it.result.slice(0, 20))}</span>` : "";
-    return `<button class="hist-item${i === S.histIndex ? " active" : ""}" data-i="${i}">
-      ${it.time ? `<div class="t">${esc(it.time)}${warn}</div>` : ""}<div>${esc(it.title)}</div></button>`;
-  }).join("");
-  S.histItems = items;
+  if (!S.logs.length) { el.innerHTML = `<div class="empty">还没有推送记录</div>`; return; }
+  const cur = beijingMonth(), groups = new Map(), current = [];
+  S.logs.forEach((it, i) => {
+    const m = it.time.slice(0, 7);
+    if (m >= cur) current.push([it, i]);
+    else { if (!groups.has(m)) groups.set(m, []); groups.get(m).push([it, i]); }
+  });
+  let html = current.length ? current.map(([it, i]) => histItemHtml(it, i)).join("")
+                            : `<div class="hist-note">本月还没有推送</div>`;
+  for (const [m, items] of groups) {
+    const open = S.histOpen.has(m), [y, mo] = m.split("-");
+    html += `<button class="hist-month${open ? " open" : ""}" data-m="${m}" aria-expanded="${open}">
+      <span class="chev" aria-hidden="true">›</span>${y} 年 ${Number(mo)} 月<span class="muted">${items.length} 条</span></button>`;
+    if (open) html += items.map(([it, i]) => histItemHtml(it, i)).join("");
+  }
+  el.innerHTML = html;
 }
 async function openHist(i) {
+  const it = S.logs[i]; if (!it) return;
   S.histIndex = i; renderHistList();
   $("#hist").classList.add("detail");
   const view = $("#hist-view"); view.innerHTML = `<div class="empty">加载中…</div>`;
   try {
-    const f = await gh.getFile(S.histItems[i].path);
+    const f = await gh.getFile(it.path);
     if (S.histIndex === i) view.innerHTML = f ? renderMd(f.text) : `<div class="empty">文件不存在</div>`;
   } catch (e) { view.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
 }
@@ -563,37 +554,28 @@ async function openHist(i) {
 // ── 数据加载 ──
 async function refreshAll(quiet = false) {
   await act("refresh", async () => {
-    const [wb, completed, status, wf, runs] = await Promise.all([
-      gh.getFile("waybills.json"), gh.getJson("completed.json", []), gh.getJson("status.json", {}),
-      gh.workflow(), gh.runs(),
+    const [wb, completed, status, wf] = await Promise.all([
+      gh.getFile("waybills.json"), gh.getJson("completed.json", []), gh.getJson("status.json", {}), gh.workflow(),
     ]);
     let list = [];
     if (wb) { try { list = JSON.parse(wb.text); } catch { toast("waybills.json 格式不对，请联系维护者", true); } }
     S.waybills = (Array.isArray(list) ? list : []).map(x => String(x).trim()).filter(Boolean);
     S.completed = new Set(Array.isArray(completed) ? completed : []);
     S.status = status && typeof status === "object" ? status : {};
-    S.runs = runs; S.lastRefresh = Date.now();
-    setWfState(wf.state); renderWaybills(); renderRuns();
+    S.lastRefresh = Date.now();
+    setWfState(wf.state); renderWaybills();
     if (!quiet) toast("已同步");
   }).catch(() => {});
   loadHistory();
-  loadSchedule();
 }
 async function loadHistory() {
   try {
     const f = await gh.getFile("logs/README.md");
     S.logs = parseLogIndex(f ? f.text : "");
+    if (S.histIndex >= S.logs.length) S.histIndex = -1;
     renderHistList();
-    if (S.histIndex < 0 && window.innerWidth > 720) openHist(0);
-    else if (S.histIndex >= 0) renderHistList();
+    if (S.histIndex < 0 && S.logs.length && window.innerWidth > 720) openHist(0);
   } catch (e) { $("#hist-list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
-}
-async function loadSchedule() {
-  try {
-    const f = await gh.getFile(`.github/workflows/${WORKFLOW}`);
-    const t = parseSchedule(f && f.text);
-    if (t.length) $("#sched-text").innerHTML = `运行时间（北京时间）：每天 ${esc(t.join(" / "))}<br><span class="muted">GitHub 的定时任务常会晚几分钟到几十分钟，属于正常现象。</span>`;
-  } catch {}
 }
 
 // ── 单号操作 ──
@@ -631,9 +613,9 @@ async function removeWaybills(items, message) {
 async function afterChange(added) {
   const pending = pendingList().length > 0;
   const wantRun = added && $("#chk-run-after").checked && pending;
-  if (store.get("autoToggle", true)) {
-    if (pending && S.wfState !== "active") { await setWorkflow(true, "有未送达单号，已自动开启定时任务"); }
-    else if (!pending && S.wfState === "active") { await setWorkflow(false, "没有未送达单号，已自动关闭定时任务"); }
+  if (AUTO_TOGGLE) {
+    if (pending && S.wfState !== "active") { await setWorkflow(true, "有未送达单号，已自动开启定时推送"); }
+    else if (!pending && S.wfState === "active") { await setWorkflow(false, "没有未送达单号，已自动关闭定时推送"); }
   }
   if (wantRun) await triggerRun("pending");
 }
@@ -643,10 +625,11 @@ async function setWorkflow(on, msg) {
   await act("wf", async () => {
     await gh.setWorkflow(on);
     setWfState(on ? "active" : "disabled_manually");
-    toast(msg || (on ? "定时任务已开启" : "定时任务已关闭"));
+    toast(msg || (on ? "定时推送已开启" : "定时推送已关闭"));
   }).catch(() => {});
 }
 async function triggerRun(scope = "all") {
+  if (!S.waybills.length) return;
   await act("run", async () => {
     if (S.wfState !== "active") { await gh.setWorkflow(true); setWfState("active"); }  // 关闭状态不能手动触发
     await gh.dispatch(scope);
@@ -661,7 +644,7 @@ async function watchTick() {
   clearTimeout(watchTimer);
   if (!S.watchUntil || Date.now() > S.watchUntil) { S.watchUntil = 0; setWfState(S.wfState); return; }
   try {
-    S.runs = await gh.runs(); renderRuns();
+    S.runs = await gh.runs();
     const active = S.runs.some(r => ACTIVE.has(r.status));
     if (active) { S.sawActive = true; showRunning(); }
     else if (S.sawActive || Date.now() - S.watchStart > 90e3) {
@@ -681,7 +664,6 @@ async function enter(token, repo) {
   await gh.connect();
   store.set("token", token); store.set("repo", repo);
   $("#login").hidden = true; $("#app").hidden = false;
-  $("#repo-label").textContent = repo; $("#set-repo").value = repo;
   placeActions();
   await refreshAll(true);
 }
@@ -710,18 +692,30 @@ $("#login-form").addEventListener("submit", async e => {
   catch (err) { $("#login-err").textContent = err.message; $("#btn-login").disabled = false; }
 });
 $("#add-form").addEventListener("submit", e => { e.preventDefault(); addWaybills($("#in-wb").value); });
+$("#in-wb").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); addWaybills($("#in-wb").value); }
+});
 $("#wb-list").addEventListener("click", e => {
   const del = e.target.closest(".del");
   if (del) { const wb = del.dataset.wb; if (confirm(`删除单号 ${wb}？`)) removeWaybills([wb], `删除单号 ${wb}（网页）`); return; }
-  const last = e.target.closest(".wb-last"); if (last) last.classList.toggle("open");
+  const card = e.target.closest(".wb");      // 点单号那一行：展开 / 收起全部状态
+  if (card && (e.target.closest(".wb-top") || !card.classList.contains("open"))) toggleWb(card.dataset.wb);
 });
+$("#wb-list").addEventListener("keydown", e => {
+  const top = e.target.closest(".wb-top");
+  if (top && (e.key === "Enter" || e.key === " ") && !e.target.closest(".del")) { e.preventDefault(); toggleWb(top.parentElement.dataset.wb); }
+});
+function toggleWb(wb) { S.openWb.has(wb) ? S.openWb.delete(wb) : S.openWb.add(wb); renderWaybills(); }
 $("#btn-clean").addEventListener("click", () => {
   const done = S.waybills.filter(isDone);
   if (!done.length) { toast("没有已送达的单号"); return; }
   if (confirm(`从列表移除 ${done.length} 个已送达单号？\n\n${done.join("\n")}`)) removeWaybills(done, `清理已送达单号 ${done.length} 个（网页）`);
 });
 $("#btn-toggle").addEventListener("click", () => setWorkflow(S.wfState !== "active"));
-$("#btn-run").addEventListener("click", () => { if (confirm("立即查询全部单号并推送到微信？")) triggerRun("all"); });
+$("#btn-run").addEventListener("click", () => {
+  if (!S.waybills.length) { toast("还没有单号，先添加单号再推送"); return; }
+  if (confirm("立即查询全部单号并推送到微信？")) triggerRun("all");
+});
 $("#btn-refresh").addEventListener("click", () => refreshAll());
 $("#btn-refresh-m").addEventListener("click", () => refreshAll());
 $("#tabs").addEventListener("click", e => {
@@ -730,15 +724,12 @@ $("#tabs").addEventListener("click", e => {
   $$("main > section").forEach(s => s.hidden = s.dataset.pane !== b.dataset.tab);
   store.set("tab", b.dataset.tab);
 });
-$("#hist-list").addEventListener("click", e => { const b = e.target.closest(".hist-item"); if (b) openHist(Number(b.dataset.i)); });
-$("#btn-back").addEventListener("click", () => $("#hist").classList.remove("detail"));
-$("#chk-run-after").addEventListener("change", e => store.set("runAfter", e.target.checked));
-$("#chk-auto").addEventListener("change", e => store.set("autoToggle", e.target.checked));
-$("#btn-save-repo").addEventListener("click", async () => {
-  const repo = $("#set-repo").value.trim().replace(/^\/|\/$/g, "");
-  try { await act("repo", () => enter(gh.token, repo)); toast("已切换到 " + repo); } catch {}
+$("#hist-list").addEventListener("click", e => {
+  const m = e.target.closest(".hist-month");
+  if (m) { const k = m.dataset.m; S.histOpen.has(k) ? S.histOpen.delete(k) : S.histOpen.add(k); renderHistList(); return; }
+  const b = e.target.closest(".hist-item"); if (b) openHist(Number(b.dataset.i));
 });
-$("#btn-logout").addEventListener("click", () => { if (confirm("退出后需要重新输入访问码，确定吗？")) logout(); });
+$("#btn-back").addEventListener("click", () => $("#hist").classList.remove("detail"));
 window.addEventListener("resize", placeActions);
 // 手机切回来时，如果超过 1 分钟没刷新就自动刷新
 document.addEventListener("visibilitychange", () => {
@@ -747,8 +738,6 @@ document.addEventListener("visibilitychange", () => {
 
 // ── 启动 ──
 (async function init() {
-  $("#chk-run-after").checked = store.get("runAfter", true);
-  $("#chk-auto").checked = store.get("autoToggle", true);
   const tab = store.get("tab"); if (tab) { const b = $(`#tabs button[data-tab="${tab}"]`); if (b) b.click(); }
 
   consumeHash();
